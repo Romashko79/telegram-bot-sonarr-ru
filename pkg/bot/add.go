@@ -30,7 +30,7 @@ const (
 )
 
 func (b *Bot) processAddCommand(update tgbotapi.Update, chatID int64, s *sonarr.Sonarr) {
-	msg := tgbotapi.NewMessage(chatID, "Handling add series ommand... please wait")
+	msg := tgbotapi.NewMessage(chatID, "Обрабатываю команду добавления сериала... подождите")
 	message, _ := b.sendMessage(msg)
 	command := userAddSeries{
 		chatID:    message.Chat.ID,
@@ -39,7 +39,7 @@ func (b *Bot) processAddCommand(update tgbotapi.Update, chatID int64, s *sonarr.
 
 	criteria := update.Message.CommandArguments()
 	if len(criteria) < 1 {
-		b.sendMessageWithEdit(&command, "Please provide a search criteria /q [query]")
+		b.sendMessageWithEdit(&command, "Укажите поисковый запрос: /q [запрос]")
 		return
 	}
 	searchResults, err := s.Lookup("\"" + criteria + "\"")
@@ -50,11 +50,11 @@ func (b *Bot) processAddCommand(update tgbotapi.Update, chatID int64, s *sonarr.
 	}
 
 	if len(searchResults) == 0 {
-		b.sendMessageWithEdit(&command, "No series found matching your search criteria")
+		b.sendMessageWithEdit(&command, "По вашему запросу сериалы не найдены")
 		return
 	}
 	if len(searchResults) > 25 {
-		b.sendMessageWithEdit(&command, "Result size too large, please narrow down your search criteria")
+		b.sendMessageWithEdit(&command, "Слишком много результатов, уточните поисковый запрос")
 		return
 	}
 
@@ -72,7 +72,7 @@ func (b *Bot) processAddCommand(update tgbotapi.Update, chatID int64, s *sonarr.
 func (b *Bot) addSeries(update tgbotapi.Update) bool {
 	chatID, err := b.getChatID(update)
 	if err != nil {
-		fmt.Printf("Cannot add series: %v", err)
+		fmt.Printf("Не удалось добавить сериал: %v", err)
 		return false
 	}
 	command, exists := b.getAddSeriesState(chatID)
@@ -197,16 +197,16 @@ func (b *Bot) showAddSeriesSearchResults(command *userAddSeries) bool {
 
 	keyboard := b.createKeyboard(buttonLabels, buttonData)
 	keyboardCancel := b.createKeyboard(
-		[]string{"Cancel - clear command"},
+		[]string{"Отмена, сбросить команду"},
 		[]string{AddSeriesCancel},
 	)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, keyboardCancel.InlineKeyboard...)
 
 	switch len(command.searchResults) {
 	case 1:
-		responseText = "*Series found*\n\n"
+		responseText = "*Найден сериал*\n\n"
 	default:
-		responseText = fmt.Sprintf("*Found %d series*\n\n", len(command.searchResults))
+		responseText = fmt.Sprintf("*Найдено сериалов: %d*\n\n", len(command.searchResults))
 	}
 	responseText += text.String()
 
@@ -228,11 +228,11 @@ func (b *Bot) addSeriesDetails(update tgbotapi.Update, command *userAddSeries) b
 	command.series = command.searchResults[seriesIDStr]
 
 	var text strings.Builder
-	fmt.Fprintf(&text, "Is this the correct series?\n\n")
+	fmt.Fprintf(&text, "Это тот самый сериал?\n\n")
 	fmt.Fprintf(&text, "[%v](https://www.imdb.com/title/%v) \\- _%v_\n\n", utils.Escape(command.series.Title), command.series.ImdbID, command.series.Year)
 
 	keyboard := b.createKeyboard(
-		[]string{"Yes, add this series", "\U0001F519"},
+		[]string{"Да, добавить этот сериал", "\U0001F519"},
 		[]string{AddSeriesYes, AddSeriesGoBack})
 
 	editMsg := tgbotapi.NewEditMessageTextAndMarkup(
@@ -251,7 +251,7 @@ func (b *Bot) addSeriesDetails(update tgbotapi.Update, command *userAddSeries) b
 func (b *Bot) handleAddSeriesYes(update tgbotapi.Update, command *userAddSeries) bool {
 	//series already in library...
 	if command.series.ID != 0 {
-		b.sendMessageWithEdit(command, "Series already in library\nAll commands have been cleared")
+		b.sendMessageWithEdit(command, "Сериал уже в библиотеке\nВсе команды сброшены")
 		return false
 	}
 
@@ -263,7 +263,7 @@ func (b *Bot) handleAddSeriesYes(update tgbotapi.Update, command *userAddSeries)
 		return false
 	}
 	if len(profiles) == 0 {
-		b.sendMessageWithEdit(command, "No quality profile(s) found on your sonarr server.\nAll commands have been cleared.")
+		b.sendMessageWithEdit(command, "На вашем сервере Sonarr не найдено профилей качества.\nВсе команды сброшены.")
 		b.clearState(update)
 	}
 	if len(profiles) == 1 {
@@ -282,7 +282,7 @@ func (b *Bot) handleAddSeriesYes(update tgbotapi.Update, command *userAddSeries)
 		command.rootFolder = rootFolders[0]
 	}
 	if len(rootFolders) == 0 {
-		b.sendMessageWithEdit(command, "No root folder(s) found on your radarr server.\nAll commands have been cleared.")
+		b.sendMessageWithEdit(command, "На вашем сервере Sonarr не найдено корневых папок.\nВсе команды сброшены.")
 		b.clearState(update)
 	}
 	command.allRootFolders = rootFolders
@@ -321,7 +321,7 @@ func (b *Bot) showAddSeriesProfiles(command *userAddSeries) bool {
 	)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, profileKeyboard...)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, keyboardGoBack.InlineKeyboard...)
-	messageText.WriteString("Select quality profile:")
+	messageText.WriteString("Выберите профиль качества:")
 	b.sendMessageWithEditAndKeyboard(
 		command,
 		keyboard,
@@ -366,7 +366,7 @@ func (b *Bot) showAddSeriesRootFolders(command *userAddSeries) bool {
 	)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, rootFolderKeyboard...)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, keyboardGoBack.InlineKeyboard...)
-	messageText.WriteString("Select root folder:")
+	messageText.WriteString("Выберите корневую папку:")
 	b.sendMessageWithEditAndKeyboard(
 		command,
 		keyboard,
@@ -380,7 +380,7 @@ func (b *Bot) handleAddSeriesRootFolder(update tgbotapi.Update, command *userAdd
 	data := strings.TrimPrefix(update.CallbackQuery.Data, "ROOTFOLDER_")
 	id, err := strconv.Atoi(data)
 	if err != nil {
-		msg := tgbotapi.NewMessage(command.chatID, "Invalid root folder selection.")
+		msg := tgbotapi.NewMessage(command.chatID, "Неверный выбор корневой папки.")
 		fmt.Println(err)
 		b.sendMessage(msg)
 		return false
@@ -393,7 +393,7 @@ func (b *Bot) handleAddSeriesRootFolder(update tgbotapi.Update, command *userAdd
 		}
 	}
 	if command.rootFolder == nil {
-		msg := tgbotapi.NewMessage(command.chatID, "Root folder not found.")
+		msg := tgbotapi.NewMessage(command.chatID, "Корневая папка не найдена.")
 		fmt.Println(err)
 		b.sendMessage(msg)
 		return false
@@ -427,7 +427,7 @@ func (b *Bot) showAddSeriesTags(command *userAddSeries) bool {
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, tagsKeyboard...)
 
 	keyboardSubmitCancelGoBack := b.createKeyboard(
-		[]string{"Done - Continue", "\U0001F519"},
+		[]string{"Готово, продолжить", "\U0001F519"},
 		[]string{AddSeriesTagsDone, AddSeriesTagsGoBack},
 	)
 
@@ -437,7 +437,7 @@ func (b *Bot) showAddSeriesTags(command *userAddSeries) bool {
 	editMsg := tgbotapi.NewEditMessageTextAndMarkup(
 		command.chatID,
 		command.messageID,
-		"Select tags:",
+		"Выберите теги:",
 		keyboard,
 	)
 	editMsg.ParseMode = "MarkdownV2"
@@ -453,7 +453,7 @@ func (b *Bot) handleAddSeriesEditSelectTag(update tgbotapi.Update, command *user
 	// Parse the tag ID
 	tagID, err := strconv.Atoi(tagIDStr)
 	if err != nil {
-		fmt.Printf("Cannot convert tag string to int: %v", err)
+		fmt.Printf("Не удалось преобразовать тег в число: %v", err)
 		return false
 	}
 	// Check if the tag is already selected
@@ -481,9 +481,9 @@ func (b *Bot) showAddSeriesType(command *userAddSeries) bool {
 		Text string
 		Data string
 	}{
-		{Text: "Standard", Data: "TYPE_standard"},
-		{Text: "Daily / Date", Data: "TYPE_daily"},
-		{Text: "Anime / Absolute", Data: "TYPE_anime"},
+		{Text: "Стандартный", Data: "TYPE_standard"},
+		{Text: "Ежедневный / по дате", Data: "TYPE_daily"},
+		{Text: "Аниме / абсолютная нумерация", Data: "TYPE_anime"},
 	}
 
 	var typeKeyboard [][]tgbotapi.InlineKeyboardButton
@@ -502,7 +502,7 @@ func (b *Bot) showAddSeriesType(command *userAddSeries) bool {
 	)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, typeKeyboard...)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, keyboardGoBack.InlineKeyboard...)
-	messageText.WriteString("Select series type:")
+	messageText.WriteString("Выберите тип сериала:")
 	b.sendMessageWithEditAndKeyboard(
 		command,
 		keyboard,
@@ -524,17 +524,17 @@ func (b *Bot) showAddSeriesMonitor(command *userAddSeries) bool {
 		Text string
 		Data string
 	}{
-		{Text: "All Episodes", Data: "MONITOR_all"},
-		{Text: "Future Episodes", Data: "MONITOR_future"},
-		{Text: "Missing Episodes", Data: "MONITOR_missing"},
-		{Text: "Existing Episodes", Data: "MONITOR_existing"},
-		{Text: "Recent Episodes", Data: "MONITOR_recent"},
-		{Text: "Pilot Episodes", Data: "MONITOR_pilot"},
-		{Text: "First Season", Data: "MONITOR_firstSeason"},
-		{Text: "Last Season", Data: "MONITOR_lastSeason"},
-		{Text: "Monitor Specials", Data: "MONITOR_monitorSpecials"},
-		{Text: "Unmonitor Specials", Data: "MONITOR_unmonitorSpecials"},
-		{Text: "None", Data: "MONITOR_none"},
+		{Text: "Все серии", Data: "MONITOR_all"},
+		{Text: "Будущие серии", Data: "MONITOR_future"},
+		{Text: "Отсутствующие серии", Data: "MONITOR_missing"},
+		{Text: "Имеющиеся серии", Data: "MONITOR_existing"},
+		{Text: "Недавние серии", Data: "MONITOR_recent"},
+		{Text: "Только пилотная серия", Data: "MONITOR_pilot"},
+		{Text: "Первый сезон", Data: "MONITOR_firstSeason"},
+		{Text: "Последний сезон", Data: "MONITOR_lastSeason"},
+		{Text: "Отслеживать спецвыпуски", Data: "MONITOR_monitorSpecials"},
+		{Text: "Не отслеживать спецвыпуски", Data: "MONITOR_unmonitorSpecials"},
+		{Text: "Ничего", Data: "MONITOR_none"},
 	}
 
 	var typeKeyboard [][]tgbotapi.InlineKeyboardButton
@@ -553,7 +553,7 @@ func (b *Bot) showAddSeriesMonitor(command *userAddSeries) bool {
 	)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, typeKeyboard...)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, keyboardGoBack.InlineKeyboard...)
-	messageText.WriteString("Select one monitoring option:")
+	messageText.WriteString("Выберите вариант отслеживания:")
 	b.sendMessageWithEditAndKeyboard(
 		command,
 		keyboard,
@@ -571,13 +571,13 @@ func (b *Bot) handleAddSeriesMonitor(update tgbotapi.Update, command *userAddSer
 
 func (b *Bot) showAddSeriesAddOptions(command *userAddSeries) bool {
 	keyboard := b.createKeyboard(
-		[]string{"Add", "Add + search missing", "Add + search missing & cutoff unmet", "Add + search cutoff unmnet", "Cancel, clear command", "\U0001F519"},
+		[]string{"Добавить", "Добавить и искать отсутствующие", "Добавить и искать отсутствующие и не достигшие порога качества", "Добавить и искать не достигшие порога качества", "Отмена, сбросить команду", "\U0001F519"},
 		[]string{AddSeries, AddSeriesMissing, AddSeriesMissingCutOff, AddSeriesCutOff, AddSeriesCancel, AddSeriesAddOptionsGoBack},
 	)
 	editMsg := tgbotapi.NewEditMessageTextAndMarkup(
 		command.chatID,
 		command.messageID,
-		"How would you like to add the series?\n",
+		"Как добавить сериал?\n",
 		keyboard,
 	)
 	editMsg.ParseMode = "MarkdownV2"
@@ -665,7 +665,7 @@ func (b *Bot) addSeriesToLibrary(update tgbotapi.Update, command *userAddSeries)
 		return false
 	}
 
-	messageText = fmt.Sprintf("Series'%v' added\n", series[0].Title)
+	messageText = fmt.Sprintf("Сериал «%v» добавлен\n", series[0].Title)
 
 	b.sendMessageWithEdit(command, messageText)
 	b.clearState(update)

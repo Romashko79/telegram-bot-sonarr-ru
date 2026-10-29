@@ -21,7 +21,7 @@ const (
 func (b *Bot) librarySeriesEdit(update tgbotapi.Update) bool {
 	chatID, err := b.getChatID(update)
 	if err != nil {
-		fmt.Printf("Cannot manage library: %v", err)
+		fmt.Printf("Не удалось открыть библиотеку: %v", err)
 		return false
 	}
 
@@ -68,7 +68,7 @@ func (b *Bot) showLibrarySeriesEdit(command *userLibrary) bool {
 	messageText := fmt.Sprintf("[%v](https://www.imdb.com/title/%v) \\- _%v_\n\n", utils.Escape(series.Title), series.ImdbID, series.Year)
 
 	keyboard := b.createKeyboard(
-		[]string{"Monitored: " + monitorIcon, qualityProfile},
+		[]string{"Отслеживается: " + monitorIcon, qualityProfile},
 		[]string{LibrarySeriesEditToggleMonitor, LibrarySeriesEditToggleQualityProfile},
 	)
 
@@ -93,7 +93,7 @@ func (b *Bot) showLibrarySeriesEdit(command *userLibrary) bool {
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, tagsKeyboard...)
 
 	keyboardSubmitCancelGoBack := b.createKeyboard(
-		[]string{"Submit - Confirm Changes", "Cancel - clear command", "\U0001F519"},
+		[]string{"Подтвердить изменения", "Отмена, сбросить команду", "\U0001F519"},
 		[]string{LibrarySeriesEditSubmitChanges, LibrarySeriesEditCancel, LibrarySeriesEditGoBack},
 	)
 
@@ -133,7 +133,7 @@ func (b *Bot) handleLibrarySeriesEditSelectTag(update tgbotapi.Update, command *
 	// Parse the tag ID
 	tagID, err := strconv.Atoi(tagIDStr)
 	if err != nil {
-		fmt.Printf("Cannot convert tag string to int: %v", err)
+		fmt.Printf("Не удалось преобразовать тег в число: %v", err)
 		return false
 	}
 
@@ -164,7 +164,7 @@ func (b *Bot) handleLibrarySeriesEditSubmitChanges(update tgbotapi.Update, comma
 		return false
 	}
 
-	text := fmt.Sprintf("Series '%v' updated\n", command.series.Title)
+	text := fmt.Sprintf("Сериал «%v» обновлён\n", command.series.Title)
 	b.clearState(update)
 	b.sendMessageWithEdit(command, text)
 	return true

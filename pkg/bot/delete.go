@@ -25,7 +25,7 @@ const (
 )
 
 func (b *Bot) processDeleteCommand(update tgbotapi.Update, chatID int64, s *sonarr.Sonarr) {
-	msg := tgbotapi.NewMessage(chatID, "Handling delete command... please wait")
+	msg := tgbotapi.NewMessage(chatID, "Обрабатываю команду удаления... подождите")
 	message, _ := b.sendMessage(msg)
 
 	series, err := s.GetSeries(0)
@@ -73,7 +73,7 @@ func (b *Bot) processDeleteCommand(update tgbotapi.Update, chatID int64, s *sona
 func (b *Bot) deleteSeries(update tgbotapi.Update) bool {
 	chatID, err := b.getChatID(update)
 	if err != nil {
-		fmt.Printf("Cannot delete Series: %v", err)
+		fmt.Printf("Не удалось удалить сериал: %v", err)
 		return false
 	}
 
@@ -179,12 +179,12 @@ func (b *Bot) showDeleteSerieSelection(command *userDeleteSeries) bool {
 	var keyboardConfirmCancel tgbotapi.InlineKeyboardMarkup
 	if len(command.selectedSeries) > 0 {
 		keyboardConfirmCancel = b.createKeyboard(
-			[]string{"Submit - Confirm Series", "Cancel - clear command"},
+			[]string{"Подтвердить выбор", "Отмена, сбросить команду"},
 			[]string{DeleteSeriesConfirm, DeleteSeriesCancel},
 		)
 	} else {
 		keyboardConfirmCancel = b.createKeyboard(
-			[]string{"Cancel - clear command"},
+			[]string{"Отмена, сбросить команду"},
 			[]string{DeleteSeriesCancel},
 		)
 	}
@@ -195,7 +195,7 @@ func (b *Bot) showDeleteSerieSelection(command *userDeleteSeries) bool {
 	editMsg := tgbotapi.NewEditMessageTextAndMarkup(
 		command.chatID,
 		command.messageID,
-		fmt.Sprintf(utils.Escape("Select the Series(s) you want to delete - page %d/%d"), page+1, totalPages),
+		fmt.Sprintf(utils.Escape("Выберите сериалы для удаления - страница %d/%d"), page+1, totalPages),
 		keyboard,
 	)
 	editMsg.ParseMode = "MarkdownV2"
@@ -207,11 +207,11 @@ func (b *Bot) showDeleteSerieSelection(command *userDeleteSeries) bool {
 
 func (b *Bot) handleDeleteSearchResults(searchResults []*sonarr.Series, command *userDeleteSeries) {
 	if len(searchResults) == 0 {
-		b.sendMessageWithEdit(command, "No Series found matching your search criteria")
+		b.sendMessageWithEdit(command, "По вашему запросу сериалы не найдены")
 		return
 	}
 	if len(searchResults) > 25 {
-		b.sendMessageWithEdit(command, "Result size too large, please narrow down your search criteria")
+		b.sendMessageWithEdit(command, "Слишком много результатов, уточните поисковый запрос")
 		return
 	}
 
@@ -223,7 +223,7 @@ func (b *Bot) handleDeleteSearchResults(searchResults []*sonarr.Series, command 
 		}
 	}
 	if len(SeriesInLibrary) == 0 {
-		b.sendMessageWithEdit(command, "No Series found in your library")
+		b.sendMessageWithEdit(command, "В вашей библиотеке нет сериалов")
 		return
 	}
 
@@ -245,10 +245,10 @@ func (b *Bot) processSeriesSelectionForDelete(command *userDeleteSeries) bool {
 	switch len(command.selectedSeries) {
 	case 1:
 		keyboard = b.createKeyboard(
-			[]string{"Yes, delete this series", "Cancel - clear command", "\U0001F519"},
+			[]string{"Да, удалить этот сериал", "Отмена, сбросить команду", "\U0001F519"},
 			[]string{DeleteSeriesYes, DeleteSeriesCancel, DeleteSeriesGoBack},
 		)
-		fmt.Fprintf(&messageText, "Do you want to delete the following series including all files?\n\n")
+		fmt.Fprintf(&messageText, "Удалить следующий сериал вместе со всеми файлами?\n\n")
 		fmt.Fprintf(&messageText, "[%v](https://www.imdb.com/title/%v) \\- _%v_\n",
 			utils.Escape(command.selectedSeries[0].Title), command.selectedSeries[0].ImdbID, command.selectedSeries[0].Year)
 		disablePreview = false
@@ -256,11 +256,11 @@ func (b *Bot) processSeriesSelectionForDelete(command *userDeleteSeries) bool {
 		return b.showDeleteSerieSelection(command)
 	default:
 		keyboard = b.createKeyboard(
-			[]string{"Yes, delete these series", "Cancel - clear command", "\U0001F519"},
+			[]string{"Да, удалить эти сериалы", "Отмена, сбросить команду", "\U0001F519"},
 			[]string{DeleteSeriesYes, DeleteSeriesCancel, DeleteSeriesGoBack},
 		)
 
-		fmt.Fprintf(&messageText, "Do you want to delete the following series including all files?\n\n")
+		fmt.Fprintf(&messageText, "Удалить следующие сериалы вместе со всеми файлами?\n\n")
 		for _, Series := range command.selectedSeries {
 			fmt.Fprintf(&messageText, "[%v](https://www.imdb.com/title/%v) \\- _%v_\n",
 				utils.Escape(Series.Title), Series.ImdbID, Series.Year)
@@ -300,7 +300,7 @@ func (b *Bot) handleDeleteSeriesYes(update tgbotapi.Update, command *userDeleteS
 		deletedSeries[i] = series.Title
 	}
 
-	messageText := fmt.Sprintf("Deleted Series:\n- %v", strings.Join(deletedSeries, "\n- "))
+	messageText := fmt.Sprintf("Удалены сериалы:\n- %v", strings.Join(deletedSeries, "\n- "))
 	editMsg := tgbotapi.NewEditMessageText(
 		command.chatID,
 		command.messageID,

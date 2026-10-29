@@ -36,7 +36,7 @@ const (
 func (b *Bot) libraryFiltered(update tgbotapi.Update) bool {
 	chatID, err := b.getChatID(update)
 	if err != nil {
-		fmt.Printf("Cannot manage library: %v", err)
+		fmt.Printf("Не удалось открыть библиотеку: %v", err)
 		return false
 	}
 
@@ -129,7 +129,7 @@ func (b *Bot) showLibrarySeriesDetail(update tgbotapi.Update, command *userLibra
 	if command.lastSeriesSearch.IsZero() {
 		lastSearchString = "" // Set empty string if the time is the zero value
 	} else {
-		lastSearchString = command.lastSeriesSearch.Format("02 Jan 06 - 15:04") // Convert non-zero time to string
+		lastSearchString = command.lastSeriesSearch.Format("02.01.06 - 15:04") // Convert non-zero time to string
 	}
 
 	// get all episodes
@@ -170,24 +170,24 @@ func (b *Bot) showLibrarySeriesDetail(update tgbotapi.Update, command *userLibra
 	// Create a message with series details
 	var message strings.Builder
 	fmt.Fprintf(&message, "[%v](https://www.imdb.com/title/%v) \\- _%v_\n\n", utils.Escape(series.Title), series.ImdbID, series.Year)
-	fmt.Fprintf(&message, "Monitored: %s\n", monitorIcon)
-	fmt.Fprintf(&message, "Status: %s\n", utils.Escape(series.Status))
-	fmt.Fprintf(&message, "Last Manual Search: %s\n", utils.Escape(lastSearchString))
-	fmt.Fprintf(&message, "Size: %d GB\n", totalSize/(1024*1024*1024))
-	fmt.Fprintf(&message, "Tags: %s\n", utils.Escape(tagsString))
-	fmt.Fprintf(&message, "Quality Profile: %s\n", utils.Escape(getQualityProfileByID(command.qualityProfiles, series.QualityProfileID).Name))
+	fmt.Fprintf(&message, "Отслеживается: %s\n", monitorIcon)
+	fmt.Fprintf(&message, "Статус: %s\n", utils.Escape(series.Status))
+	fmt.Fprintf(&message, "Последний ручной поиск: %s\n", utils.Escape(lastSearchString))
+	fmt.Fprintf(&message, "Размер: %d ГБ\n", totalSize/(1024*1024*1024))
+	fmt.Fprintf(&message, "Теги: %s\n", utils.Escape(tagsString))
+	fmt.Fprintf(&message, "Профиль качества: %s\n", utils.Escape(getQualityProfileByID(command.qualityProfiles, series.QualityProfileID).Name))
 
 	messageText := message.String()
 
 	var keyboard tgbotapi.InlineKeyboardMarkup
 	if !series.Monitored {
 		keyboard = b.createKeyboard(
-			[]string{"Monitor Series", "Monitor Series & Search Now", "Delete Series", "Edit Series", "Edit Seasons", "\U0001F519"},
+			[]string{"Отслеживать сериал", "Отслеживать и искать сейчас", "Удалить сериал", "Изменить сериал", "Изменить сезоны", "\U0001F519"},
 			[]string{LibrarySeriesMonitor, LibrarySeriesMonitorSearchNow, LibrarySeriesDelete, LibrarySeriesEdit, LibrarySeriesSeasonEdit, LibrarySeriesGoBack},
 		)
 	} else {
 		keyboard = b.createKeyboard(
-			[]string{"Unmonitor Series", "Search Series", "Delete Series", "Edit Series", "Edit Seasons", "\U0001F519"},
+			[]string{"Не отслеживать сериал", "Искать сериал", "Удалить сериал", "Изменить сериал", "Изменить сезоны", "\U0001F519"},
 			[]string{LibrarySeriesUnmonitor, LibrarySeriesSearch, LibrarySeriesDelete, LibrarySeriesEdit, LibrarySeriesSeasonEdit, LibrarySeriesGoBack},
 		)
 	}
@@ -276,7 +276,7 @@ func (b *Bot) handleLibrarySeriesMonitorSearchNow(update tgbotapi.Update, comman
 func (b *Bot) handleLibrarySeriesDelete(command *userLibrary) bool {
 	messageText := fmt.Sprintf("[%v](https://www.imdb.com/title/%v) \\- _%v_\n\n", utils.Escape(command.series.Title), command.series.ImdbID, command.series.Year)
 	keyboard := b.createKeyboard(
-		[]string{"Yes, delete this series", "\U0001F519"},
+		[]string{"Да, удалить этот сериал", "\U0001F519"},
 		[]string{LibrarySeriesDeleteYes, LibrarySeriesDeleteNo},
 	)
 	// Send the message containing series details along with the keyboard
@@ -300,7 +300,7 @@ func (b *Bot) handleLibrarySeriesDeleteYes(update tgbotapi.Update, command *user
 		b.sendMessage(msg)
 		return false
 	}
-	text := fmt.Sprintf("Series '%v' deleted\n", command.series.Title)
+	text := fmt.Sprintf("Сериал «%v» удалён\n", command.series.Title)
 	b.clearState(update)
 	b.sendMessageWithEdit(command, text)
 	return true

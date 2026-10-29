@@ -21,8 +21,8 @@ const (
 	LibraryFilteredCommand    = "LIBRARYFILTERED"
 	LibrarySeriesEditCommand  = "LIBRARYSERIESEDIT"
 	LibrarySeasonsEditCommand = "LIBRARYSEASONSEDIT"
-	CommandsClearedMessage    = "I am not sure what you mean.\nAll commands have been cleared"
-	CommandsCleared           = "All commands have been cleared"
+	CommandsClearedMessage    = "Не понимаю, что вы имеете в виду.\nВсе команды сброшены"
+	CommandsCleared           = "Все команды сброшены"
 )
 
 type userAddSeries struct {
@@ -140,12 +140,12 @@ func (b *Bot) HandleUpdates(updates <-chan tgbotapi.Update) {
 func (b *Bot) HandleUpdate(update tgbotapi.Update) {
 	chatID, err := b.getChatID(update)
 	if err != nil {
-		fmt.Printf("Cannot handle update: %v", err)
+		fmt.Printf("Не удалось обработать обновление: %v", err)
 		return
 	}
 
 	if update.Message != nil && !b.Config.AllowedChatIDs[chatID] {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Access denied. You are not authorized.")
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Доступ запрещён. У вас нет прав.")
 		b.sendMessage(msg)
 		return
 	}
@@ -205,7 +205,7 @@ func (b *Bot) HandleUpdate(update tgbotapi.Update) {
 func (b *Bot) clearState(update tgbotapi.Update) {
 	chatID, err := b.getChatID(update)
 	if err != nil {
-		fmt.Printf("Cannot clear state: %v", err)
+		fmt.Printf("Не удалось сбросить состояние: %v", err)
 		return
 	}
 
@@ -240,7 +240,7 @@ func (b *Bot) getChatID(update tgbotapi.Update) (int64, error) {
 		chatID = update.CallbackQuery.Message.Chat.ID
 	}
 	if chatID == 0 {
-		return 0, fmt.Errorf("no user ID found in Message and CallbackQuery")
+		return 0, fmt.Errorf("не найден ID пользователя в Message и CallbackQuery")
 	}
 	return chatID, nil
 }
@@ -300,7 +300,7 @@ func (b *Bot) setLibraryState(chatID int64, state *userLibrary) {
 func (b *Bot) sendMessage(msg tgbotapi.Chattable) (tgbotapi.Message, error) {
 	message, err := b.Bot.Send(msg)
 	if err != nil {
-		log.Println("Error sending message:", err)
+		log.Println("Ошибка отправки сообщения:", err)
 	}
 	return message, err
 }
@@ -313,7 +313,7 @@ func (b *Bot) sendMessageWithEdit(command Command, text string) {
 	)
 	_, err := b.sendMessage(editMsg)
 	if err != nil {
-		log.Printf("Error editing message: %v", err)
+		log.Printf("Ошибка изменения сообщения: %v", err)
 	}
 }
 
@@ -326,7 +326,7 @@ func (b *Bot) sendMessageWithEditAndKeyboard(command Command, keyboard tgbotapi.
 	)
 	_, err := b.sendMessage(editMsg)
 	if err != nil {
-		log.Printf("Error editing message with keyboard: %v", err)
+		log.Printf("Ошибка изменения сообщения с клавиатурой: %v", err)
 	}
 }
 

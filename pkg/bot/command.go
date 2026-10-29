@@ -14,7 +14,7 @@ func (b *Bot) handleCommand(update tgbotapi.Update, s *sonarr.Sonarr) {
 
 	chatID, err := b.getChatID(update)
 	if err != nil {
-		fmt.Printf("Cannot handle command: %v", err)
+		fmt.Printf("Не удалось обработать команду: %v", err)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (b *Bot) handleCommand(update tgbotapi.Update, s *sonarr.Sonarr) {
 
 	case "clear", "cancel", "stop":
 		b.clearState(update)
-		msg.Text = "All commands have been cleared"
+		msg.Text = "Все команды сброшены"
 		b.sendMessage(msg)
 
 	case "diskspace", "disk", "free", "rootfolder", "rootfolders":
@@ -66,7 +66,7 @@ func (b *Bot) handleCommand(update tgbotapi.Update, s *sonarr.Sonarr) {
 			break
 		}
 		if len(upcoming) == 0 {
-			msg.Text = "no upcoming releases in the next 30 days"
+			msg.Text = "В ближайшие 30 дней релизов нет"
 			b.sendMessage(msg)
 			break
 		}
@@ -84,7 +84,7 @@ func (b *Bot) handleCommand(update tgbotapi.Update, s *sonarr.Sonarr) {
 			b.sendMessage(msg)
 			break
 		}
-		msg.Text = "RSS sync started"
+		msg.Text = "RSS-синхронизация запущена"
 		b.sendMessage(msg)
 
 	// does not work
@@ -155,23 +155,23 @@ func (b *Bot) handleCommand(update tgbotapi.Update, s *sonarr.Sonarr) {
 		b.sendMessage(msg)
 
 	case "getid", "id":
-		msg.Text = fmt.Sprintf("Your user ID: %d", chatID)
+		msg.Text = fmt.Sprintf("Ваш ID пользователя: %d", chatID)
 		b.sendMessage(msg)
 
 	default:
-		msg.Text = fmt.Sprintf("Hello %v!\n", update.Message.From)
-		msg.Text += "Here's a list of commands at your disposal:\n\n"
-		msg.Text += "/q [series] - searches a series \n"
-		msg.Text += "/library [series] - manage series(s)\n"
-		msg.Text += "/delete [series] - deletes a series\n"
-		msg.Text += "/clear - deletes all sent commands\n"
-		msg.Text += "/free  - lists free disk space \n"
-		msg.Text += "/up\t\t\t\t - lists upcoming episodes in the next 30 days\n"
-		msg.Text += "/rss \t\t - performs a RSS sync\n"
+		msg.Text = fmt.Sprintf("Привет, %v!\n", update.Message.From)
+		msg.Text += "Доступные команды:\n\n"
+		msg.Text += "/q [сериал] - поиск сериала\n"
+		msg.Text += "/library [сериал] - управление сериалами\n"
+		msg.Text += "/delete [сериал] - удаление сериала\n"
+		msg.Text += "/clear - сбросить все отправленные команды\n"
+		msg.Text += "/free - свободное место на дисках\n"
+		msg.Text += "/up - ближайшие серии на 30 дней вперёд\n"
+		msg.Text += "/rss - запустить RSS-синхронизацию\n"
 		//msg.Text += "/searchmonitored - searches all monitored series\n"
 		//msg.Text += "/updateall - updates metadata and rescans files/folders\n"
-		msg.Text += "/system - shows your Sonarr configuration\n"
-		msg.Text += "/id - shows your Telegram user ID"
+		msg.Text += "/system - конфигурация Sonarr\n"
+		msg.Text += "/id - ваш Telegram ID"
 		b.sendMessage(msg)
 	}
 }

@@ -36,7 +36,7 @@ const (
 )
 
 func (b *Bot) processLibraryCommand(update tgbotapi.Update, chatID int64, s *sonarr.Sonarr) {
-	msg := tgbotapi.NewMessage(chatID, "Handling library command... please wait")
+	msg := tgbotapi.NewMessage(chatID, "Обрабатываю команду библиотеки... подождите")
 	message, _ := b.sendMessage(msg)
 
 	qualityProfiles, err := s.GetQualityProfiles()
@@ -88,7 +88,7 @@ func (b *Bot) processLibraryCommand(update tgbotapi.Update, chatID int64, s *son
 func (b *Bot) libraryMenu(update tgbotapi.Update) bool {
 	chatID, err := b.getChatID(update)
 	if err != nil {
-		fmt.Printf("Cannot manage library: %v", err)
+		fmt.Printf("Не удалось открыть библиотеку: %v", err)
 		return false
 	}
 
@@ -120,27 +120,27 @@ func (b *Bot) libraryMenu(update tgbotapi.Update) bool {
 func (b *Bot) showLibraryMenu(command *userLibrary) bool {
 	keyboard := [][]tgbotapi.InlineKeyboardButton{
 		{
-			tgbotapi.NewInlineKeyboardButtonData("Monitored Series", FilterMonitored),
-			tgbotapi.NewInlineKeyboardButtonData("Unonitored Series", FilterUnmonitored),
+			tgbotapi.NewInlineKeyboardButtonData("Отслеживаемые сериалы", FilterMonitored),
+			tgbotapi.NewInlineKeyboardButtonData("Неотслеживаемые сериалы", FilterUnmonitored),
 		},
 		{
-			tgbotapi.NewInlineKeyboardButtonData("Continuing Series", FilterContinuing),
-			tgbotapi.NewInlineKeyboardButtonData("Ended Series", FilterEnded),
+			tgbotapi.NewInlineKeyboardButtonData("Продолжающиеся сериалы", FilterContinuing),
+			tgbotapi.NewInlineKeyboardButtonData("Завершённые сериалы", FilterEnded),
 		},
 		{
-			tgbotapi.NewInlineKeyboardButtonData("Series on Disk", FilterOnDisk),
-			tgbotapi.NewInlineKeyboardButtonData("Series with missing episodes", FilterMissingEpisodes),
+			tgbotapi.NewInlineKeyboardButtonData("Сериалы на диске", FilterOnDisk),
+			tgbotapi.NewInlineKeyboardButtonData("Сериалы с отсутствующими сериями", FilterMissingEpisodes),
 		},
 		{
-			tgbotapi.NewInlineKeyboardButtonData("All Series", FilterShowAll),
+			tgbotapi.NewInlineKeyboardButtonData("Все сериалы", FilterShowAll),
 		},
 		{
-			tgbotapi.NewInlineKeyboardButtonData("Cancel - clear command", LibraryCancel),
+			tgbotapi.NewInlineKeyboardButtonData("Отмена, сбросить команду", LibraryCancel),
 		},
 	}
 	command.page = 0
 	b.setLibraryState(command.chatID, command)
-	b.sendMessageWithEditAndKeyboard(command, tgbotapi.InlineKeyboardMarkup{InlineKeyboard: keyboard}, "Select an option:")
+	b.sendMessageWithEditAndKeyboard(command, tgbotapi.InlineKeyboardMarkup{InlineKeyboard: keyboard}, "Выберите вариант:")
 	return false
 }
 
@@ -155,25 +155,25 @@ func (b *Bot) showLibraryMenuFiltered(command *userLibrary) bool {
 			return series.Monitored
 		})
 		command.filter = FilterMonitored
-		responseText = "Monitored Series"
+		responseText = "Отслеживаемые сериалы"
 	case FilterUnmonitored:
 		filteredSeries = filterSeries(command.library, func(series *sonarr.Series) bool {
 			return !series.Monitored
 		})
 		command.filter = FilterUnmonitored
-		responseText = "Unmonitored Series"
+		responseText = "Неотслеживаемые сериалы"
 	case FilterContinuing:
 		filteredSeries = filterSeries(command.library, func(series *sonarr.Series) bool {
 			return series.Status == "continuing"
 		})
 		command.filter = FilterContinuing
-		responseText = "Continuing Series"
+		responseText = "Продолжающиеся сериалы"
 	case FilterEnded:
 		filteredSeries = filterSeries(command.library, func(series *sonarr.Series) bool {
 			return series.Ended == *starr.True()
 		})
 		command.filter = FilterEnded
-		responseText = "Ended Series"
+		responseText = "Завершённые сериалы"
 	case FilterOnDisk:
 		filteredSeries = filterSeries(command.library, func(series *sonarr.Series) bool {
 			for _, season := range series.Seasons {
@@ -183,7 +183,7 @@ func (b *Bot) showLibraryMenuFiltered(command *userLibrary) bool {
 			}
 			return false
 		})
-		responseText = "Series on Disk"
+		responseText = "Сериалы на диске"
 	case FilterMissingEpisodes:
 		filteredSeries = filterSeries(command.library, func(series *sonarr.Series) bool {
 			for _, season := range series.Seasons {
@@ -194,17 +194,17 @@ func (b *Bot) showLibraryMenuFiltered(command *userLibrary) bool {
 			return false
 		})
 		command.filter = FilterMissingEpisodes
-		responseText = "Series with Missing Episodes"
+		responseText = "Сериалы с отсутствующими сериями"
 	case FilterShowAll:
 		filteredSeries = filterSeries(command.library, func(series *sonarr.Series) bool {
 			return true
 		})
 		command.filter = FilterShowAll
-		responseText = "All Series"
+		responseText = "Все сериалы"
 	case FilterSearchResults:
 		filteredSeries = command.searchResultsInLibrary
 		command.filter = FilterSearchResults
-		responseText = "Search Results"
+		responseText = "Результаты поиска"
 	default:
 		command.filter = ""
 		b.setLibraryState(command.chatID, command)
@@ -215,7 +215,7 @@ func (b *Bot) showLibraryMenuFiltered(command *userLibrary) bool {
 	var row []tgbotapi.InlineKeyboardButton
 
 	if len(filteredSeries) == 0 {
-		responseText = "No series found matching your filter criteria"
+		responseText = "Сериалов, подходящих под фильтр, не найдено"
 		row = append(row, tgbotapi.NewInlineKeyboardButtonData("\U0001F519", LibraryFilteredGoBack))
 		inlineKeyboard = append(inlineKeyboard, row)
 	} else {
@@ -232,7 +232,7 @@ func (b *Bot) showLibraryMenuFiltered(command *userLibrary) bool {
 			endIndex = len(filteredSeries)
 		}
 
-		responseText = fmt.Sprintf("%s - page %d/%d", responseText, page+1, totalPages)
+		responseText = fmt.Sprintf("%s - страница %d/%d", responseText, page+1, totalPages)
 
 		sort.SliceStable(filteredSeries, func(i, j int) bool {
 			return utils.IgnoreArticles(strings.ToLower(filteredSeries[i].Title)) < utils.IgnoreArticles(strings.ToLower(filteredSeries[j].Title))
@@ -296,11 +296,11 @@ func filterSeries(series []*sonarr.Series, filterCondition func(series *sonarr.S
 
 func (b *Bot) handleSearchResults(update tgbotapi.Update, searchResults []*sonarr.Series, command *userLibrary) {
 	if len(searchResults) == 0 {
-		b.sendMessageWithEdit(command, "No series found matching your search criteria")
+		b.sendMessageWithEdit(command, "По вашему запросу сериалы не найдены")
 		return
 	}
 	if len(searchResults) > 25 {
-		b.sendMessageWithEdit(command, "Result size too large, please narrow down your search criteria")
+		b.sendMessageWithEdit(command, "Слишком много результатов, уточните поисковый запрос")
 		return
 	}
 
@@ -312,7 +312,7 @@ func (b *Bot) handleSearchResults(update tgbotapi.Update, searchResults []*sonar
 		}
 	}
 	if len(seriesInLibrary) == 0 {
-		b.sendMessageWithEdit(command, "No series found in your library")
+		b.sendMessageWithEdit(command, "В вашей библиотеке нет сериалов")
 		return
 	}
 

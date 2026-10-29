@@ -30,7 +30,7 @@ const (
 func (b *Bot) librarySeasonEdit(update tgbotapi.Update) bool {
 	chatID, err := b.getChatID(update)
 	if err != nil {
-		fmt.Printf("Cannot manage library: %v", err)
+		fmt.Printf("Не удалось открыть библиотеку: %v", err)
 		return false
 	}
 
@@ -82,9 +82,9 @@ func (b *Bot) showLibrarySeason(command *userLibrary) bool {
 	for _, season := range command.series.Seasons {
 		var buttonText string
 		if season.SeasonNumber == 0 {
-			buttonText = "Specials"
+			buttonText = "Спецвыпуски"
 		} else {
-			buttonText = fmt.Sprintf("Season %d", season.SeasonNumber)
+			buttonText = fmt.Sprintf("Сезон %d", season.SeasonNumber)
 		}
 		row := []tgbotapi.InlineKeyboardButton{
 			tgbotapi.NewInlineKeyboardButtonData(buttonText, fmt.Sprintf("SEASON_%d", season.SeasonNumber)),
@@ -126,7 +126,7 @@ func (b *Bot) handleLibrarySeasonEditSelectSeason(update tgbotapi.Update, comman
 	seasonNumberStr := strings.TrimPrefix(update.CallbackQuery.Data, "SEASON_")
 	seasonNumber, err := strconv.Atoi(seasonNumberStr)
 	if err != nil {
-		log.Println("Failed to convert season number to integer:", err)
+		log.Println("Не удалось преобразовать номер сезона в число:", err)
 		return false
 	}
 	command.selectedSeason = getSeasonByNumber(command.series, seasonNumber)
@@ -150,7 +150,7 @@ func (b *Bot) showLibrarySeriesSeasonDetail(command *userLibrary) bool {
 	if command.lastSeasonSearch[season.SeasonNumber].IsZero() {
 		lastSearchString = "" // Set empty string if the time is the zero value
 	} else {
-		lastSearchString = command.lastSeasonSearch[season.SeasonNumber].Format("02 Jan 06 - 15:04") // Convert non-zero time to string
+		lastSearchString = command.lastSeasonSearch[season.SeasonNumber].Format("02.01.06 - 15:04") // Convert non-zero time to string
 	}
 
 	var seasonEpisodesCounter int
@@ -179,15 +179,15 @@ func (b *Bot) showLibrarySeriesSeasonDetail(command *userLibrary) bool {
 	// Create a message with season details
 	var message strings.Builder
 	if season.SeasonNumber == 0 {
-		fmt.Fprintf(&message, "[%v](https://www.imdb.com/title/%v) \\- _%v_ \\- Specials\n\n", utils.Escape(series.Title), series.ImdbID, series.Year)
+		fmt.Fprintf(&message, "[%v](https://www.imdb.com/title/%v) \\- _%v_ \\- Спецвыпуски\n\n", utils.Escape(series.Title), series.ImdbID, series.Year)
 	} else {
-		fmt.Fprintf(&message, "[%v](https://www.imdb.com/title/%v) \\- _%v_ \\- Season _%v_\n\n", utils.Escape(series.Title), series.ImdbID, series.Year, season.SeasonNumber)
+		fmt.Fprintf(&message, "[%v](https://www.imdb.com/title/%v) \\- _%v_ \\- Сезон _%v_\n\n", utils.Escape(series.Title), series.ImdbID, series.Year, season.SeasonNumber)
 	}
-	fmt.Fprintf(&message, "Monitored: %s\n", monitorIcon)
-	fmt.Fprintf(&message, "Last Manual Search: %s\n", utils.Escape(lastSearchString))
-	fmt.Fprintf(&message, "Episodes: %d\n", seasonEpisodesCounter)
-	fmt.Fprintf(&message, "Episodes on Disk: %d\n", len(seasonEpisodeFiles))
-	fmt.Fprintf(&message, "Size: %d GB\n", totalSize/(1024*1024*1024))
+	fmt.Fprintf(&message, "Отслеживается: %s\n", monitorIcon)
+	fmt.Fprintf(&message, "Последний ручной поиск: %s\n", utils.Escape(lastSearchString))
+	fmt.Fprintf(&message, "Серий: %d\n", seasonEpisodesCounter)
+	fmt.Fprintf(&message, "Серий на диске: %d\n", len(seasonEpisodeFiles))
+	fmt.Fprintf(&message, "Размер: %d ГБ\n", totalSize/(1024*1024*1024))
 
 	messageText := message.String()
 
@@ -195,22 +195,22 @@ func (b *Bot) showLibrarySeriesSeasonDetail(command *userLibrary) bool {
 
 	if season.Monitored && len(seasonEpisodeFiles) == 0 {
 		keyboard = b.createKeyboard(
-			[]string{"Unmonitor Season", "Search Season", "\U0001F519"},
+			[]string{"Не отслеживать сезон", "Искать сезон", "\U0001F519"},
 			[]string{LibrarySeasonUnmonitor, LibrarySeasonSearch, LibrarySeasonGoBack},
 		)
 	} else if season.Monitored && len(seasonEpisodeFiles) > 0 {
 		keyboard = b.createKeyboard(
-			[]string{"Unmonitor Season", "Search Season", "Delete Season & Unmonitor", "\U0001F519"},
+			[]string{"Не отслеживать сезон", "Искать сезон", "Удалить сезон и не отслеживать", "\U0001F519"},
 			[]string{LibrarySeasonUnmonitor, LibrarySeasonSearch, LibrarySeasonDelete, LibrarySeasonGoBack},
 		)
 	} else if !season.Monitored && len(seasonEpisodeFiles) == 0 {
 		keyboard = b.createKeyboard(
-			[]string{"Monitor Season", "Monitor Season & Search Now", "\U0001F519"},
+			[]string{"Отслеживать сезон", "Отслеживать сезон и искать сейчас", "\U0001F519"},
 			[]string{LibrarySeasonMonitor, LibrarySeasonMonitorSearchNow, LibrarySeasonGoBack},
 		)
 	} else if !season.Monitored && len(seasonEpisodeFiles) > 0 {
 		keyboard = b.createKeyboard(
-			[]string{"Monitor Season", "Monitor Season & Search Now", "Delete Season & Unmonitor", "\U0001F519"},
+			[]string{"Отслеживать сезон", "Отслеживать сезон и искать сейчас", "Удалить сезон и не отслеживать", "\U0001F519"},
 			[]string{LibrarySeasonMonitor, LibrarySeasonMonitorSearchNow, LibrarySeasonDelete, LibrarySeasonGoBack},
 		)
 	}
@@ -377,7 +377,7 @@ func (b *Bot) handleLibrarySeasonEditSubmitChanges(update tgbotapi.Update, comma
 		return false
 	}
 
-	text := fmt.Sprintf("Series '%v' updated\n", command.series.Title)
+	text := fmt.Sprintf("Сериал «%v» обновлён\n", command.series.Title)
 	b.clearState(update)
 	b.sendMessageWithEdit(command, text)
 	return true
