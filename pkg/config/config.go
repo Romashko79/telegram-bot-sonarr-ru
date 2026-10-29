@@ -38,43 +38,43 @@ func LoadConfig() (Config, error) {
 
 	// Validate required fields
 	if config.TelegramBotToken == "" {
-		return config, errors.New("SBOT_TELEGRAM_BOT_TOKEN is empty or not set")
+		return config, errors.New("Переменная SBOT_TELEGRAM_BOT_TOKEN пуста или не задана")
 	}
 	if allowedUserIDs == "" {
-		return config, errors.New("SBOT_BOT_ALLOWED_USERIDS is empty or not set")
+		return config, errors.New("Переменная SBOT_BOT_ALLOWED_USERIDS пуста или не задана")
 	}
 	if botMaxItems == "" {
-		return config, errors.New("SBOT_BOT_MAX_ITEMS is empty or not set")
+		return config, errors.New("Переменная SBOT_BOT_MAX_ITEMS пуста или не задана")
 	}
 	if botIgnoreTags == "" {
-		return config, errors.New("SBOT_BOT_IGNORE_TAGS is empty or not set")
+		return config, errors.New("Переменная SBOT_BOT_IGNORE_TAGS пуста или не задана")
 	}
 	// Normalize and validate SBOT_SONARR_PROTOCOL
 	config.SonarrProtocol = strings.ToLower(config.SonarrProtocol)
 	if config.SonarrProtocol != "http" && config.SonarrProtocol != "https" {
-		return config, errors.New("SBOT_SONARR_PROTOCOL must be http or https")
+		return config, errors.New("Переменная SBOT_SONARR_PROTOCOL должна быть http или https")
 	}
 	if config.SonarrHostname == "" {
-		return config, errors.New("SBOT_SONARR_HOSTNAME is empty or not set")
+		return config, errors.New("Переменная SBOT_SONARR_HOSTNAME пуста или не задана")
 	}
 	if sonarrPort == "" {
-		return config, errors.New("SBOT_SONARR_PORT is empty or not set")
+		return config, errors.New("Переменная SBOT_SONARR_PORT пуста или не задана")
 	}
 	if config.SonarrAPIKey == "" {
-		return config, errors.New("SBOT_SONARR_API_KEY is empty or not set")
+		return config, errors.New("Переменная SBOT_SONARR_API_KEY пуста или не задана")
 	}
 
 	// Parsing SBOT_BOT_MAX_ITEMS as a number
 	maxItems, err := strconv.Atoi(botMaxItems)
 	if err != nil {
-		return config, errors.New("SBOT_BOT_MAX_ITEMS is not a valid number")
+		return config, errors.New("Переменная SBOT_BOT_MAX_ITEMS должна быть числом")
 	}
 	config.MaxItems = maxItems
 
 	// Parsing SBOT_BOT_IGNORE_TAGS as a boolean
 	ignoreTags, err := strconv.ParseBool(botIgnoreTags)
 	if err != nil {
-		return config, errors.New("SBOT_BOT_IGNORE_TAGS is not a valid boolean")
+		return config, errors.New("Переменная SBOT_BOT_IGNORE_TAGS должна быть true или false")
 	}
 	config.IgnoreTags = ignoreTags
 
@@ -95,7 +95,7 @@ func LoadConfig() (Config, error) {
 	for _, id := range userIDs {
 		parsedID, err := strconv.ParseInt(id, 10, 64)
 		if err != nil {
-			return config, fmt.Errorf("SBOT_BOT_ALLOWED_USERIDS contains non-integer value: %s", err)
+			return config, fmt.Errorf("Переменная SBOT_BOT_ALLOWED_USERIDS содержит нецелое значение: %s", err)
 		}
 		parsedUserIDs[parsedID] = true
 	}
@@ -104,7 +104,7 @@ func LoadConfig() (Config, error) {
 	// Parsing SBOT_SONARR_PORT as a number
 	port, err := strconv.Atoi(sonarrPort)
 	if err != nil {
-		return config, errors.New("SBOT_SONARR_PORT is not a valid number")
+		return config, errors.New("Переменная SBOT_SONARR_PORT должна быть числом")
 	}
 	config.SonarrPort = port
 
