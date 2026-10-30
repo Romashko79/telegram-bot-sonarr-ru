@@ -101,7 +101,7 @@ func (b *Bot) addSeries(update tgbotapi.Update) bool {
 			return b.showAddSeriesProfiles(command)
 		}
 		return b.showAddSeriesRootFolders(command)
-	case AddSeriesTypeGoBack:
+	case AddSeriesTypeGoBack, AddSeriesMonitorGoBack:
 		// Check if there are no tags or tags should be ignored
 		if len(command.allTags) == 0 || b.Config.IgnoreTags {
 			// Check if there is only one root folder and one profile
@@ -121,11 +121,6 @@ func (b *Bot) addSeries(update tgbotapi.Update) bool {
 		}
 		// If there are tags, go to the tags step
 		return b.showAddSeriesTags(command)
-	case AddSeriesMonitorGoBack:
-		if b.Config.SeriesType != "" {
-			return b.showAddSeriesSearchResults(command)
-		}
-		return b.showAddSeriesType(command)
 	case AddSeriesAddOptionsGoBack:
 		return b.showAddSeriesMonitor(command)
 	case AddSeriesCancel:
@@ -471,45 +466,13 @@ func (b *Bot) handleAddSeriesEditSelectTag(update tgbotapi.Update, command *user
 }
 
 func (b *Bot) showAddSeriesType(command *userAddSeries) bool {
-	// If series type is set in config, skip this step
+	// The series type step is skipped: "standard" by default,
+	// or the value from SBOT_BOT_SERIES_TYPE if it is set
+	command.seriesType = "standard"
 	if b.Config.SeriesType != "" {
 		command.seriesType = b.Config.SeriesType
-		return b.showAddSeriesMonitor(command)
 	}
-
-	types := []struct {
-		Text string
-		Data string
-	}{
-		{Text: "Стандартный", Data: "TYPE_standard"},
-		{Text: "Ежедневный / по дате", Data: "TYPE_daily"},
-		{Text: "Аниме / абсолютная нумерация", Data: "TYPE_anime"},
-	}
-
-	var typeKeyboard [][]tgbotapi.InlineKeyboardButton
-	for _, t := range types {
-		row := []tgbotapi.InlineKeyboardButton{
-			tgbotapi.NewInlineKeyboardButtonData(t.Text, t.Data),
-		}
-		typeKeyboard = append(typeKeyboard, row)
-	}
-
-	var messageText strings.Builder
-	var keyboard tgbotapi.InlineKeyboardMarkup
-	keyboardGoBack := b.createKeyboard(
-		[]string{"\U0001F519"},
-		[]string{AddSeriesTypeGoBack},
-	)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, typeKeyboard...)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, keyboardGoBack.InlineKeyboard...)
-	messageText.WriteString("Выберите тип сериала:")
-	b.sendMessageWithEditAndKeyboard(
-		command,
-		keyboard,
-		messageText.String(),
-	)
-	return false
-
+	return b.showAddSeriesMonitor(command)
 }
 
 func (b *Bot) handleAddSeriesType(update tgbotapi.Update, command *userAddSeries) bool {
@@ -532,9 +495,6 @@ func (b *Bot) showAddSeriesMonitor(command *userAddSeries) bool {
 		{Text: "Только пилотная серия", Data: "MONITOR_pilot"},
 		{Text: "Первый сезон", Data: "MONITOR_firstSeason"},
 		{Text: "Последний сезон", Data: "MONITOR_lastSeason"},
-		{Text: "Отслеживать спецвыпуски", Data: "MONITOR_monitorSpecials"},
-		{Text: "Не отслеживать спецвыпуски", Data: "MONITOR_unmonitorSpecials"},
-		{Text: "Ничего", Data: "MONITOR_none"},
 	}
 
 	var typeKeyboard [][]tgbotapi.InlineKeyboardButton
@@ -566,12 +526,13 @@ func (b *Bot) showAddSeriesMonitor(command *userAddSeries) bool {
 func (b *Bot) handleAddSeriesMonitor(update tgbotapi.Update, command *userAddSeries) bool {
 	command.monitor = strings.TrimPrefix(update.CallbackQuery.Data, "MONITOR_")
 	b.setAddSeriesState(command.chatID, command)
-	return b.showAddSeriesAddOptions(command)
+	// The "how to add" step is skipped: add the series and search for missing episodes
+	return b.handleAddSeriesMissing(update, command)
 }
 
 func (b *Bot) showAddSeriesAddOptions(command *userAddSeries) bool {
 	keyboard := b.createKeyboard(
-		[]string{"Добавить", "Добавить и искать отсутствующие", "Добавить и искать отсутствующие и не достигшие порога качества", "Добавить и искать не достигшие порога качества", "Отмена, сбросить команду", "\U0001F519"},
+		[]string{"Только добавить", "Искать отсутствующие", "Искать отсутствующие и до порога", "Искать до порога качества", "Отмена, сбросить команду", "\U0001F519"},
 		[]string{AddSeries, AddSeriesMissing, AddSeriesMissingCutOff, AddSeriesCutOff, AddSeriesCancel, AddSeriesAddOptionsGoBack},
 	)
 	editMsg := tgbotapi.NewEditMessageTextAndMarkup(
