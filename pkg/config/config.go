@@ -20,6 +20,8 @@ type Config struct {
 	SonarrPort       int
 	SonarrAPIKey     string
 	SonarrBaseUrl    string
+	WebhookPort      int
+	WebhookToken     string
 }
 
 func LoadConfig() (Config, error) {
@@ -107,6 +109,16 @@ func LoadConfig() (Config, error) {
 		return config, errors.New("Переменная SBOT_SONARR_PORT должна быть числом")
 	}
 	config.SonarrPort = port
+
+	// Optional: receiver for Sonarr webhook notifications
+	config.WebhookToken = os.Getenv("SBOT_WEBHOOK_TOKEN")
+	if webhookPort := os.Getenv("SBOT_WEBHOOK_PORT"); webhookPort != "" {
+		wp, err := strconv.Atoi(webhookPort)
+		if err != nil {
+			return config, errors.New("Переменная SBOT_WEBHOOK_PORT должна быть числом")
+		}
+		config.WebhookPort = wp
+	}
 
 	return config, nil
 }
